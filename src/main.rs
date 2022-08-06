@@ -5,7 +5,7 @@ use std::io::{Write, BufRead, BufReader, ErrorKind};
 use std::fs::File;
 use std::cmp::Ordering;
 use rand::Rng;
-use std::collections::HashMap;
+use std::collections::{HashMap, BinaryHeap};
 
 fn main() {
     // const GREETING: &str = "What is your name?";
@@ -31,8 +31,16 @@ fn main() {
     let mut fib_result2 = fibonacci_memo(fib_value.trim().parse().expect("Input not an integer"));
     print!("The {}th term of the fibonacci sequence is {}\n", fib_value.trim_end(), fib_result2);    
 
-    let mut fib_result3 = fibonacci(fib_value.trim().parse().expect("Input not an integer"));
-    print!("The {}th term of the fibonacci sequence is {}\n", fib_value.trim_end(), fib_result3);
+    // let mut fib_result3 = fibonacci(fib_value.trim().parse().expect("Input not an integer"));
+    // print!("The {}th term of the fibonacci sequence is {}\n", fib_value.trim_end(), fib_result3);
+
+    const GUESS: &str = "Enter a number between 1 and 100:";
+    println!("{}",GUESS);
+    let mut guess_value = String::new();
+    io::stdin().read_line(&mut guess_value).expect("Didn't receive input");
+    let guess_value = guess_value.trim().parse().expect("Input not an integer");
+    let guess_result = guess_number(guess_value);
+    println!("{}",guess_result);
 }
 
 // The FizzBuzz problem is a classic test given in coding interviews. 
@@ -133,4 +141,111 @@ fn fibonacci_memo(number: usize) -> usize {
     }
 
     get_fibonacci(number, &mut vec![None; number + 1])
+}
+
+//binary search
+fn binary_search(list: &[i32], number: i32) -> bool {
+    let mut low = 0;
+    let mut high = list.len() - 1;
+    while low <= high {
+        let mid = (low + high) / 2;
+        match list[mid].cmp(&number) {
+            Ordering::Less => low = mid + 1,
+            Ordering::Greater => high = mid - 1,
+            Ordering::Equal => return true,
+        }
+    }
+    return false;
+}
+
+//sorting
+fn bubble_sort(list: &mut [i32]) {
+    let mut i = 0;
+    let mut j = 0;
+    while i < list.len() {
+        while j < list.len() - 1 {
+            if list[j] > list[j + 1] {
+                list.swap(j, j + 1);
+            }
+            j += 1;
+        }
+        i += 1;
+        j = 0;
+    }
+}
+
+//merge sort
+fn merge_sort(list: &mut [i32]) {
+    if list.len() > 1 {
+        let mid = list.len() / 2;
+        let mut left = list[..mid].to_vec();
+        let mut right = list[mid..].to_vec();
+        merge_sort(&mut left);
+        merge_sort(&mut right);
+        merge(list, &mut left, &mut right);
+    }
+}
+
+//merge sort helper
+fn merge(list: &mut [i32], left: &mut [i32], right: &mut [i32]) {
+    let mut i = 0;
+    let mut j = 0;
+    let mut k = 0;
+    while i < left.len() && j < right.len() {
+        if left[i] < right[j] {
+            list[k] = left[i];
+            i += 1;
+        } else {
+            list[k] = right[j];
+            j += 1;
+        }
+        k += 1;
+    }
+    while i < left.len() {
+        list[k] = left[i];
+        i += 1;
+        k += 1;
+    }
+    while j < right.len() {
+        list[k] = right[j];
+        j += 1;
+        k += 1;
+    }
+}
+
+//quick sort
+fn quick_sort(list: &mut [i32]) {
+    if list.len() > 1 {
+        let pivot = list[0];
+        let mut left = Vec::new();
+        let mut right = Vec::new();
+        for i in 1..list.len() {
+            if list[i] < pivot {
+                left.push(list[i]);
+            } else {
+                right.push(list[i]);
+            }
+        }
+        quick_sort(&mut left);
+        quick_sort(&mut right);
+        list[..left.len()].copy_from_slice(&left);
+        list[left.len()..].copy_from_slice(&right);
+    }
+}
+
+//guess number
+fn guess_number(guess_value: i32) -> i32 {
+    let mut rng = rand::thread_rng();
+    let secret_number = rng.gen_range(1..101);
+    println!("The secret number is: {}", secret_number);
+    if guess_value == secret_number {
+        println!("You guessed it!");
+        return 1;
+    } else if guess_value < secret_number {
+        println!("Too low!");
+        return 2;
+    } else {
+        println!("Too high!");
+        return 3;
+    }
 }
